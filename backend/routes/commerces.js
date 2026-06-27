@@ -154,7 +154,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
     const { data, error } = await supabase
       .from('commerces')
-      .update({ nom, categorie, description, telephone, adresse, horaires, lat, lng, visible, photos, updated_at: new Date().toISOString() })
+      .update({ nom, categorie, description, telephone, adresse, horaires, lat, lng, visible, photos })
       .eq('id', id)
       .select()
       .single();
@@ -179,7 +179,7 @@ router.patch('/:id/publish', verifyToken, async (req, res) => {
 
     const { data, error } = await supabase
       .from('commerces')
-      .update({ visible: true, updated_at: new Date().toISOString() })
+      .update({ visible: true })
       .eq('id', id).select().single();
     if (error) throw error;
     return ok(res, data);
@@ -201,7 +201,7 @@ router.patch('/:id/unpublish', verifyToken, async (req, res) => {
 
     const { data, error } = await supabase
       .from('commerces')
-      .update({ visible: false, updated_at: new Date().toISOString() })
+      .update({ visible: false })
       .eq('id', id).select().single();
     if (error) throw error;
     return ok(res, data);
@@ -234,7 +234,7 @@ router.post('/:id/photos', verifyToken, upload.single('photo'), async (req, res)
     const newPhotos = [...(commerce.photos || []), photoUrl];
     const { data: updated, error: updateErr } = await supabase
       .from('commerces')
-      .update({ photos: newPhotos, updated_at: new Date().toISOString() })
+      .update({ photos: newPhotos })
       .eq('id', id).select().single();
     if (updateErr) throw updateErr;
 
@@ -284,7 +284,7 @@ router.post('/:id/commentaires', verifyToken, async (req, res) => {
 
     const { data: updatedCommerce, error: updErr } = await supabase
       .from('commerces')
-      .update({ note_moyenne: Number(avg.toFixed(2)), updated_at: new Date().toISOString() })
+      .update({ note_moyenne: Number(avg.toFixed(2)) })
       .eq('id', id).select().single();
     if (updErr) throw updErr;
 
