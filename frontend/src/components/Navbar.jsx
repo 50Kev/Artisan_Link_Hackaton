@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
 
         <Link to="/" className="text-base font-bold text-slate-900 tracking-tight">
-          Artisan<span className="text-blue-600">Connect</span>
+          SongTaaba<span className="text-blue-600">-Market</span>
         </Link>
 
         {/* Desktop */}
