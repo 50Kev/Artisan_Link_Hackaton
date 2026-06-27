@@ -19,8 +19,9 @@ const PORT = process.env.PORT || 3001;
 // -frontend peut être undefined ; dans ce cas on ne l'ajoute pas à la liste.
 const allowedOrigins = [
   'http://localhost:5173',
+  'https://artisan-link-hackaton.vercel.app',
   process.env.FRONTEND_URL,
-].filter(Boolean); // supprime les valeurs vides/undefined
+].filter(Boolean);
 
 app.use(
   cors({
