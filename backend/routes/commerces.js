@@ -29,13 +29,55 @@ router.get('/', async (req, res) => {
     let query = supabase.from('commerces').select('*');
 
     const { q, categorie } = req.query;
-    if (q) {
-      const search = `%${q}%`;
-      query = query.or(`nom.ilike.${search},categorie.ilike.${search}`);
+
+    if (q && q.trim()) {
+      const mots = q.trim().split(/\s+/).filter(m => m.length > 1);
+      const termes = mots.length > 0 ? mots : [q.trim()];
+
+      // Normalisation : variantes de métiers → racine commune
+      const SYNONYMES = {
+        'coiffure': 'coiff', 'coiffeur': 'coiff', 'coiffeuse': 'coiff',
+        'menuiserie': 'menuisi', 'menuisier': 'menuisi',
+        'mecanique': 'mecanici', 'mécanique': 'mecanici', 'mécanicien': 'mecanici', 'mecanicien': 'mecanici',
+        'couture': 'coutur', 'couturier': 'coutur',
+        'electricite': 'electri', 'électricité': 'electri', 'electricien': 'electri', 'électricien': 'electri',
+        'plomberie': 'plomb', 'plombier': 'plomb',
+        'maconnerie': 'macon', 'maçonnerie': 'macon', 'maçon': 'macon',
+        'boulangerie': 'boulan', 'boulanger': 'boulan',
+        'soudure': 'soud', 'soudeur': 'soud',
+        'photographie': 'photo', 'photographe': 'photo',
+        'telephone': 'teleph', 'téléphone': 'teleph',
+        'reparateur': 'reparat', 'réparateur': 'reparat',
+      };
+
+      const normaliser = (s) =>
+        s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      // On récupère TOUS les commerces puis on filtre en JS
+      // pour contourner les limitations de syntaxe Supabase .or() avec ilike
+      const { data: tous, error: fetchErr } = await supabase
+        .from('commerces')
+        .select('*')
+        .eq('visible', true);
+      if (fetchErr) throw fetchErr;
+
+      const resultats = tous.filter(c => {
+        return termes.every(terme => {
+          const t = normaliser(terme.replace(/[%*]/g, ''));
+          const radical = SYNONYMES[t] || t;
+          const champs = [c.nom, c.categorie, c.description, c.adresse]
+            .filter(Boolean)
+            .map(v => normaliser(v));
+          return champs.some(champ => champ.includes(radical));
+        });
+      });
+
+      return ok(res, resultats);
     }
-    // filtre categorie exact depuis le select du frontend
-    if (categorie) {
-      query = query.ilike('categorie', `%${categorie}%`);
+
+    // Filtre catégorie depuis le <select> (sans recherche texte)
+    if (categorie && categorie.trim()) {
+      query = query.ilike('categorie', '%' + categorie.trim() + '%');
     }
 
     const { lat, lng, radius } = req.query;

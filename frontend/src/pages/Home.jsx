@@ -6,9 +6,11 @@ import CommerceCard from '../components/CommerceCard';
 import Spinner from '../components/Spinner';
 import { getCommerces } from '../api/commerces';
 
+// Ces valeurs correspondent exactement aux catégories insérées en DB (seed.js)
 const CATEGORIES = [
-  "Menuiserie", "Mécanique", "Coiffure", "Couture",
-  "Électricité", "Plomberie", "Maçonnerie", "Restauration"
+  "Menuisier", "Mécanicien", "Coiffeur", "Couturier",
+  "Électricien", "Plombier", "Maçon", "Boulanger",
+  "Soudeur", "Photographe", "Réparateur téléphone",
 ];
 
 export default function Home() {
@@ -50,7 +52,12 @@ export default function Home() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const params = {};
-    if (searchQuery) params.q = searchQuery;
+    // Si une catégorie est sélectionnée dans le select ET qu'il y a du texte libre,
+    // on envoie les deux : le backend cherchera le texte libre dans nom/description
+    // et filtrera en plus sur la catégorie exacte.
+    // Si seulement le texte est renseigné, le backend fait la normalisation des variantes
+    // (ex: "Coiffure" → trouve "Coiffeur" grâce aux synonymes côté backend).
+    if (searchQuery.trim()) params.q = searchQuery.trim();
     if (selectedCategory) params.categorie = selectedCategory;
     fetchArtisans(params);
   };
@@ -98,8 +105,8 @@ export default function Home() {
       <div className="max-w-5xl w-full mx-auto px-4 -mt-14 relative z-30">
         <form onSubmit={handleSearchSubmit} className="bg-white p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           <div className="md:col-span-5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 ml-1">Que recherchez-vous ?</label>
-            <input type="text" placeholder="Ex: Atelier de couture, menuisier..."
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 ml-1">Service recherché</label>
+            <input type="text" placeholder="Ex: Coiffure, mécanique, ou nom d'un commerce..."
               className="w-full h-11 px-4 bg-slate-50 text-slate-800 rounded-xl border border-slate-200/80 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium"
               value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             />
