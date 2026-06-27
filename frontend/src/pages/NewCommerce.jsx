@@ -5,8 +5,9 @@ import Spinner from '../components/Spinner';
 import { createCommerce, uploadPhoto } from '../api/commerces';
 
 const CATEGORIES = [
-  "Menuiserie", "Mécanique", "Coiffure", "Couture", 
-  "Électricité", "Plomberie", "Maçonnerie", "Restauration"
+  "Menuisier", "Mécanicien", "Coiffeur", "Couturier",
+  "Électricien", "Plombier", "Maçon", "Boulanger",
+  "Soudeur", "Photographe", "Réparateur téléphone",
 ];
 
 export default function NewCommerce() {
@@ -86,9 +87,13 @@ export default function NewCommerce() {
       const commercePayload = { nom, categorie, description, telephone, adresse, horaires, lat, lng, visible: isVisible };
 
       // createCommerce retourne l'objet commerce (res.data depuis l'interceptor)
-      const newCommerce = await createCommerce(commercePayload);
-      // Supabase v2 avec .select().single() renvoie directement l'objet
-      const commerceId = newCommerce?.id;
+      const result = await createCommerce(commercePayload);
+      // Selon la double-interprétation de l'interceptor axios :
+      // interceptor: res → res.data = { success, data: {...} }
+      // createCommerce: res → res.data = l'objet commerce directement
+      // On couvre les deux cas pour robustesse
+      const commerceId = result?.id || result?.data?.id;
+      console.log('[NewCommerce] result:', result, '→ commerceId:', commerceId);
 
       if (selectedFiles.length > 0 && commerceId) {
         for (const file of selectedFiles) {
